@@ -4,7 +4,7 @@ The following images offer default environments for cse1001, cse4001, and our [c
 
 ## Publication
 
-Kourtnee Fernalld, TJ OConnor, Sneha Sudhakaran, Nasheen Nur. Lightweight Symphony: Towards Reducing Computer Science Student Anxiety with Standardized Docker Environments.* Special Interest Group on Information Technology Education (SIGITE 23), Marietta, GA, October 2023. 
+Kourtnee Fernalld, TJ OConnor, Sneha Sudhakaran, Nasheen Nur. *Lightweight Symphony: Towards Reducing Computer Science Student Anxiety with Standardized Docker Environments.* Special Interest Group on Information Technology Education (SIGITE 23), Marietta, GA, October 2023. 
 
 
 ## Images
