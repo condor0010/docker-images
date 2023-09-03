@@ -208,6 +208,9 @@ RUN python3 -m pip install --no-cache-dir \
     z3-solver \
     xortool 
 
+# fix angr issue by forcing pycparser installation that ignores distutils 
+RUN pip install --upgrade --ignore-installed pycparser
+
 # install angrop from source -- fixes "rop" import error
 RUN cd /opt/ && git clone https://github.com/angr/angrop && \
     cd angrop && pip3 install . 
@@ -407,8 +410,8 @@ RUN cd /opt/ && git clone https://github.com/pwndbg/pwndbg && \
   ./setup.sh
 
 # install autorop (auto-exploit tool)
-RUN cd /opt && git clone https://github.com/mariuszskon/autorop && \
-     cd autorop && pip3 install .
+# RUN cd /opt && git clone https://github.com/mariuszskon/autorop && \
+#     cd autorop && pip3 install .
 
 # download getsome.py (auto-exploit tool)
 RUN cd /opt/ && \
@@ -440,7 +443,6 @@ RUN dpkg --add-architecture armhf && \
     apt-get -y install libssl-dev:armhf \
                        libssl-dev:armel \
                        libc6:i386 \
-                       libncurses5:i386 \
                        libstdc++6:i386 \
                        libc6-dev-i386 \
                        gcc-aarch64-linux-gnu \
