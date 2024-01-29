@@ -7,21 +7,31 @@ LABEL contributor="Louie <lorcinolo2020@my.fit.edu>"
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/New_York
 
-################################################################################
-# apt-get installs
-################################################################################
-
 RUN apt-get clean -y && \
     apt-get update -qq -y && \
     apt-get upgrade -qq -y && \
     apt-get update -y 
 
-RUN apt-get install -y --ignore-missing afl-* \
+################################################################################
+# cross-compilation stuff for i386 first
+################################################################################
+RUN dpkg --add-architecture i386 && \
+    apt-get update -y && \
+    apt-get -y install -o APT::Immediate-Configure=false \
+       libc6-i386 \
+       libstdc++6:i386 \
+       libc6-dev-i386 \
+       --no-install-recommends
+
+################################################################################
+# apt-get installs
+################################################################################
+
+RUN apt-get install -y --ignore-missing \
     aircrack-ng \
     apt-utils \
     apktool \
     atomicparsley \
-    #audacity \
     audispd-plugins \
     auditd \
     autoconf \
@@ -48,7 +58,7 @@ RUN apt-get install -y --ignore-missing afl-* \
     flawfinder \
     flex \
     foremost \
-    forensics-all \
+#    forensics-all \
     g++ \
     gcc \
     gcc-multilib \
@@ -112,7 +122,7 @@ RUN apt-get install -y --ignore-missing afl-* \
     rpm2cpio \
     ruby \
     ruby-dev \
-    sagemath \ 
+    # sagemath \ 
     shellter \
     silenttrinity \
     snapd \
@@ -154,7 +164,8 @@ RUN apt-get install -y --ignore-missing afl-* \
     kali-tools-web \
     kali-tools-reverse-engineering \
     kali-tools-forensics --fix-missing && \
-    rm -rf /var/lib/apt/lists/*
+       rm -rf /var/lib/apt/lists/*
+
 
 ################################################################################
 # python3 pip installs
@@ -169,13 +180,14 @@ RUN python3 -m pip install --no-cache-dir \
     autopep8 \
     boofuzz \
     capstone \
-    #ciphey \
+#   ciphey \
+    crypto \
     cython \
-    keystone-engine \
+    keystone-engine \ 
     GitPython \
     log_symbols \
     maat \
-    mobsfscan \
+#    mobsfscan \
     nuitka \ 
     openai \ 
     opencv-python \
@@ -188,6 +200,7 @@ RUN python3 -m pip install --no-cache-dir \
     pycryptodome \
     pyfiglet \
     pymaat \ 
+    pwncli \
     pwntools \
     python-magic \
     pyradamsa \
@@ -204,7 +217,6 @@ RUN python3 -m pip install --no-cache-dir \
     stego-lsb \
     sudo \
     unicorn \
-    #urh \
     z3-solver \
     xortool 
 
@@ -319,7 +331,6 @@ RUN cd /opt/ && \
 ## rf installs ##
 ################################################################################
 
-
 # install dump1090 (ads-b monitoring)
 RUN cd /opt && \
     git clone https://github.com/antirez/dump1090.git && \
@@ -372,14 +383,20 @@ RUN wget -O /usr/local/bin/slink \
 ## re installs ##
 ################################################################################
 
-# install tigress obfuscator
+# install angr-cfg stuff
 
+RUN cd /opt && git clone https://github.com/axt/bingraphvis && \
+    pip3 install -e ./bingraphvis
+
+RUN cd /opt && git clone https://github.com/axt/angr-utils && \
+    pip3 install -e ./angr-utils
+
+# install tigress obfuscator
 COPY tigress.tar.gz /opt/.
 RUN cd /opt/ && tar -xvzf tigress.tar.gz 
 ENV TIGRESS_HOME=/opt/tigress/3.1
 ENV PATH=$PATH:/opt/tigress/3.1
 
-# install mobsf for android/ioS RE: TODO
 
 # install movobfuscator compiler
 RUN cd /opt && \
@@ -398,20 +415,19 @@ RUN cd /opt/ && \
     git clone https://github.com/ChrisTheCoolHut/call_trace && \
     cd call_trace && make
 ENV PATH=$PATH:/opt/call_trace/build/
-    
+
 ################################################################################
 ## pwn installs ##
 ################################################################################
 
+# fuzzing
+RUN cd /opt/ && git clone https://gitlab.com/akihe/radamsa.git && \
+    cd radamsa && make && sudo make install
 
 # install pwndbg (gdb enhancement)
 RUN cd /opt/ && git clone https://github.com/pwndbg/pwndbg && \
   cd pwndbg && \
   ./setup.sh
-
-# install autorop (auto-exploit tool)
-# RUN cd /opt && git clone https://github.com/mariuszskon/autorop && \
-#     cd autorop && pip3 install .
 
 # download getsome.py (auto-exploit tool)
 RUN cd /opt/ && \
@@ -424,38 +440,33 @@ RUN cd /opt/ && \
     git clone --depth 1 https://github.com/shellphish/how2heap how2heap
 
 # install pwninit for patching bins for ctfs     
-RUN wget -O /bin/pwninit https://github.com/io12/pwninit/releases/download/3.3.0/pwninit && \
+RUN wget -O /bin/pwninit https://github.com/io12/pwninit/releases/download/3.3.1/pwninit && \
     chmod +x /bin/pwninit 
 
 # Pwn College: Pwn Kernel (https://github.com/pwncollege/)
 RUN cd /opt && git clone https://github.com/pwncollege/pwnkernel
 #RUN cd /opt/pwnkernel/ && ./build.sh
 
-################################################################################
-##  cross-compilation stuff
-################################################################################
-
-## some cross-compilation stuff
-RUN dpkg --add-architecture armhf && \
-    dpkg --add-architecture armel && \
-    dpkg --add-architecture i386 && \
-    apt-get update -y && \
-    apt-get -y install libssl-dev:armhf \
-                       libssl-dev:armel \
-                       libc6:i386 \
-                       libstdc++6:i386 \
-                       libc6-dev-i386 \
-                       gcc-aarch64-linux-gnu \
-		       gcc-arm-linux-gnueabi \
-   		       gcc-arm-linux-gnueabihf \
-                       binutils-aarch64-linux-gnu && \
-                       rm -rf /var/lib/apt/lists/*
 
 # downloads libc-database
 RUN cd /opt/ && \
     git clone https://github.com/niklasb/libc-database && \
     cd /opt/libc-database &&\
     ./get ubuntu 
+
+################################################################################
+# cross-compilation stuff (armhf/armel) last
+################################################################################
+RUN dpkg --add-architecture armhf && \
+    dpkg --add-architecture armel && \
+    apt-get update -y && \
+    apt-get -y install -o APT::Immediate-Configure=false \
+       gcc-aarch64-linux-gnu \
+       gcc-arm-linux-gnueabi \
+       gcc-arm-linux-gnueabihf \
+       binutils-aarch64-linux-gnu \
+       --no-install-recommends && \
+       rm -rf /var/lib/apt/lists/*
 
 ################################################################################
 # resolves issue with local environment
@@ -474,5 +485,8 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 WORKDIR /root/workspace
 RUN cd /root/workspace
 RUN chsh -s /bin/zsh
+RUN echo "set-option -g default-shell /bin/zsh" > /root/.tmux.conf
+RUN touch ~/.hushlogin
 
-ENTRYPOINT ["/bin/zsh"]
+
+ENTRYPOINT ["/bin/tmux"]
