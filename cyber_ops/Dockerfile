@@ -153,6 +153,7 @@ RUN apt-get install -y --ignore-missing \
     zsh \
     zlib1g-dev \
     zstd  \
+    bat \
     kali-tools-fuzzing \
     kali-tools-crypto-stego \
     kali-tools-802-11 \
@@ -486,6 +487,7 @@ WORKDIR /root/workspace
 RUN cd /root/workspace
 RUN chsh -s /bin/zsh
 RUN echo "set-option -g default-shell /bin/zsh" > /root/.tmux.conf
+RUN echo "alias bat=\"batcat\"" >> /root/.zshrc
 RUN touch ~/.hushlogin
 
 
